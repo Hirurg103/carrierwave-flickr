@@ -36,7 +36,7 @@ describe CarrierWave::Storage::Flickr do
     Photo.create(image: file)
   end
 
-  it 'should store file in the flickr account' do
+  it 'should upload an image to flickr when creating a photo' do
     expect_any_instance_of(FlickRaw::Flickr).to receive(:upload_photo) do |cached_file|
       expect(cached_file.read).to eq file.read
     end
