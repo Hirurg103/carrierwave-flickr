@@ -1,7 +1,15 @@
 require "carrierwave/flickr/version"
+require "carrierwave/storage/flickr"
 
-module Carrierwave
+module CarrierWave
   module Flickr
-    # Your code goes here...
   end
 end
+
+require 'carrierwave'
+CarrierWave.configure do |config|
+  config.storage_engines[:flickr] = 'CarrierWave::Storage::Flickr'
+end
+
+require 'carrierwave/flickr/configuration'
+CarrierWave::Uploader::Base.include(CarrierWave::Flickr::Configuration)
