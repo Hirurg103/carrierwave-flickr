@@ -30,6 +30,8 @@ describe CarrierWave::Storage::Flickr do
 
   class Photo < ActiveRecord::Base
     mount_uploader :image, ImageUploader
+
+    attr_accessor :description
   end
 
   def create_photo(file)
@@ -42,5 +44,21 @@ describe CarrierWave::Storage::Flickr do
     end
 
     create_photo(file)
+  end
+
+  it 'should store a photo title when it is provided' do
+    expect(flickr).to receive(:upload_photo).with(anything, title: 'My Cat')
+
+    photo = Photo.new image: file, title: 'My Cat'
+    photo.save!
+  end
+
+
+  it 'should store a photo description when it is specified' do
+    expect(flickr).to receive(:upload_photo)
+     .with(anything, hash_including(description: 'My Dog'))
+
+    photo = Photo.new image: file, description: 'My Dog'
+    photo.save!
   end
 end
