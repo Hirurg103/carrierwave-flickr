@@ -6,11 +6,10 @@ require 'carrierwave/flickr/version'
 Gem::Specification.new do |spec|
   spec.name          = "carrierwave-flickr"
   spec.version       = Carrierwave::Flickr::VERSION
-  spec.authors       = ["Dzmitry"]
-  spec.email         = ["dzmitry.kovalenok@thehamon.com"]
+  spec.authors       = ["Dzmitry Kavalionak"]
+  spec.email         = ["dzm.kov@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.summary       = %q{Save your image attachments in http://flickr.com/ using Carrierwave}
   spec.homepage      = "TODO: Put your gem's website or public repo URL here."
   spec.license       = "MIT"
 
