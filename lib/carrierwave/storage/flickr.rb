@@ -7,9 +7,31 @@ module CarrierWave
 
       def store!(file)
         f = CarrierWave::Storage::Flickr::File.new(uploader, self)
-        f.store(file)
+        @info = f.store(file)
+        store_identifier
         f
       end
+
+      def identifier
+        (@info.as_json || {}).slice(
+          'id',
+          'secret',
+          'server',
+          'farm',
+          'originalsecret').to_json
+      end
+
+      private
+
+      def store_identifier
+        column = @uploader.mounted_as
+        model = @uploader.model
+
+        model.public_send(:"write_#{column}_identifier")
+
+        model.update_column column, model.read_attribute(column)
+      end
+
 
       class File
         def initialize(uploader, base)
@@ -20,9 +42,11 @@ module CarrierWave
         def store(new_file)
           file = new_file.to_file
 
-          flickr.upload_photo file, **store_options
+          photo_id = flickr.upload_photo file, **store_options
 
           file.close if file && !file.closed?
+
+          @info = flickr.photos.getInfo('photo_id' => photo_id)
         end
 
         private

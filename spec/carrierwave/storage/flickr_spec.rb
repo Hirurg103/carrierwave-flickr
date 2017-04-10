@@ -1,14 +1,11 @@
 require 'spec_helper'
 
 describe CarrierWave::Storage::Flickr do
-  def stub_flickr_api
+  before do
     allow_any_instance_of(FlickRaw::Flickr).to receive(:call)
       .with('flickr.reflection.getMethods')
       .and_return([])
-  end
-  before { stub_flickr_api }
 
-  before do
     CarrierWave.configure do |config|
       config.flickr = {
         key: 'API_KEY',
@@ -19,9 +16,27 @@ describe CarrierWave::Storage::Flickr do
     end
   end
 
+  def fixture_file(file)
+    File.open File.expand_path("../../../fixtures/#{file}", __FILE__)
+  end
+
+  def flickr_photo_info
+    info = JSON.parse(fixture_file('flickr/photo_info.json').read)
+    FlickRaw::Response.build(info, 'photo')
+  end
+
+  def stub_flickr_api
+    allow(flickr).to receive(:upload_photo)
+      .and_return flickr_photo_info['id']
+
+    allow(flickr).to receive_message_chain('photos.getInfo')
+      .and_return flickr_photo_info
+  end
+  before { stub_flickr_api }
+
+
   let(:file) do
-    file = File.open File.expand_path('../../../fixtures/test.jpg', __FILE__)
-    CarrierWave::SanitizedFile.new(file).tap { |f| f.content_type = 'image/jpg' }
+    CarrierWave::SanitizedFile.new(fixture_file 'test.jpg').tap { |f| f.content_type = 'image/jpg' }
   end
 
   class ImageUploader < CarrierWave::Uploader::Base
@@ -35,7 +50,7 @@ describe CarrierWave::Storage::Flickr do
   end
 
   def create_photo(file)
-    Photo.create(image: file)
+    Photo.create!(image: file)
   end
 
   it 'should upload an image to flickr when creating a photo' do
@@ -53,7 +68,6 @@ describe CarrierWave::Storage::Flickr do
     photo.save!
   end
 
-
   it 'should store a photo description when it is specified' do
     expect(flickr).to receive(:upload_photo)
      .with(anything, hash_including(description: 'My Dog'))
@@ -61,4 +75,16 @@ describe CarrierWave::Storage::Flickr do
     photo = Photo.new image: file, description: 'My Dog'
     photo.save!
   end
+
+  it 'should store flickr image info as an identifier' do
+    photo = Photo.create image: file
+    photo.save!
+    expect(photo.read_attribute('image')).to eq({
+      id: "33727870355",
+      secret: "e68c2eaecf",
+      server: "2864",
+      farm: 3,
+      originalsecret: "08ee278bb2" }.to_json)
+  end
+
 end
