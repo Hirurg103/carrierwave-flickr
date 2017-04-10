@@ -87,4 +87,13 @@ describe CarrierWave::Storage::Flickr do
       originalsecret: "08ee278bb2" }.to_json)
   end
 
+  it 'should retrieve photo url from the identifier' do
+    photo = Photo.new
+    photo.write_attribute :image, flickr_photo_info.to_json
+
+    expect(photo.image.url).to eq 'https://farm3.staticflickr.com/2864/33727870355_08ee278bb2_o.jpg'
+
+    expect(photo.image.url(format: :square)).to eq 'https://farm3.staticflickr.com/2864/33727870355_e68c2eaecf_s.jpg'
+  end
+
 end

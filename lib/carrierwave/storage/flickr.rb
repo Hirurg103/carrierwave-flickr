@@ -12,6 +12,11 @@ module CarrierWave
         f
       end
 
+      def retrieve!(identifier)
+        info = JSON.parse(identifier)
+        CarrierWave::Storage::Flickr::File.new(uploader, self, info)
+      end
+
       def identifier
         (@info.as_json || {}).slice(
           'id',
@@ -34,9 +39,14 @@ module CarrierWave
 
 
       class File
-        def initialize(uploader, base)
+        def initialize(uploader, base, info = nil)
           @uploader = uploader
           @base = base
+          @info = FlickRaw::Response.build(info, 'photo') if info
+        end
+
+        def url(format: :original)
+          FlickRaw.public_send(format_getter(format), @info) if @info
         end
 
         def store(new_file)
@@ -62,6 +72,20 @@ module CarrierWave
           @uploader.model
         end
 
+        def format_getter(format)
+          {
+            square:       :url_s,
+            large_square: :url_q,
+            thumbnail:    :url_t,
+            small:        :url_m,
+            small_320:    :url_n,
+            medium:       :url,
+            medium_640:   :url_z,
+            medium_800:   :url_c,
+            large:        :url_b,
+            original:     :url_o
+          }.fetch(format)
+        end
       end
 
     end
