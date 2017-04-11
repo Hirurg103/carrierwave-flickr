@@ -20,8 +20,8 @@ describe CarrierWave::Storage::Flickr do
     File.open File.expand_path("../../../fixtures/#{file}", __FILE__)
   end
 
-  def flickr_photo_info
-    info = JSON.parse(fixture_file('flickr/photo_info.json').read)
+  def flickr_photo_info(photo = 'photo_info')
+    info = JSON.parse(fixture_file("flickr/#{photo}.json").read)
     FlickRaw::Response.build(info, 'photo')
   end
 
@@ -84,7 +84,8 @@ describe CarrierWave::Storage::Flickr do
       secret: "e68c2eaecf",
       server: "2864",
       farm: 3,
-      originalsecret: "08ee278bb2" }.to_json)
+      originalsecret: "08ee278bb2",
+      originalformat: "jpg" }.to_json)
   end
 
   it 'should retrieve photo url from the identifier' do
@@ -94,6 +95,52 @@ describe CarrierWave::Storage::Flickr do
     expect(photo.image.url).to eq 'https://farm3.staticflickr.com/2864/33727870355_08ee278bb2_o.jpg'
 
     expect(photo.image.url(format: :square)).to eq 'https://farm3.staticflickr.com/2864/33727870355_e68c2eaecf_s.jpg'
+  end
+
+  let(:new_file) do
+    CarrierWave::SanitizedFile.new(fixture_file 'test1.jpg').tap { |f| f.content_type = 'image/jpg' }
+  end
+
+  it 'should replace image when saving a new photo' do
+    old_photo_info = flickr_photo_info
+    photo = create_photo file
+
+    photo.image = new_file
+
+    new_photo_info = flickr_photo_info('another_photo_info')
+    allow(flickr).to receive_message_chain('photos.getInfo').and_return new_photo_info
+
+    expect(flickr).to receive(:upload_photo) do |cached_file|
+      expect(cached_file.read).to eq new_file.read
+    end
+    expect(flickr).to receive_message_chain('photos.delete')
+      .with('photo_id' => old_photo_info['id'])
+    photo.save!
+  end
+
+  it 'should delete old flickr photo when downloading a new photo from an url' do
+    old_photo_info = flickr_photo_info
+    photo = Photo.new
+    photo.image.download! 'http://c1.staticflickr.com/1/688/21892142671_31a26968a0_z.jpg'
+    photo.save!
+
+    photo.image.download! 'http://c1.staticflickr.com/1/422/18982103459_0ce32d2fe4_n.jpg'
+
+    new_photo_info = flickr_photo_info('another_photo_info')
+    allow(flickr).to receive_message_chain('photos.getInfo').and_return new_photo_info
+
+    expect(flickr).to receive(:upload_photo)
+    expect(flickr).to receive_message_chain('photos.delete')
+      .with('photo_id' => old_photo_info['id'])
+    photo.save!
+  end
+
+  it 'should delete flickr photo when destroying a photo' do
+    photo = create_photo file
+
+    expect(flickr).to receive_message_chain('photos.delete')
+       .with('photo_id' => flickr_photo_info['id'])
+    photo.destroy!
   end
 
 end

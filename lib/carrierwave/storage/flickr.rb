@@ -23,7 +23,8 @@ module CarrierWave
           'secret',
           'server',
           'farm',
-          'originalsecret').to_json
+          'originalsecret',
+          'originalformat').to_json
       end
 
       private
@@ -33,8 +34,6 @@ module CarrierWave
         model = @uploader.model
 
         model.public_send(:"write_#{column}_identifier")
-
-        model.update_column column, model.read_attribute(column)
       end
 
 
@@ -49,6 +48,10 @@ module CarrierWave
           FlickRaw.public_send(format_getter(format), @info) if @info
         end
 
+        def path
+          url
+        end
+
         def store(new_file)
           file = new_file.to_file
 
@@ -57,6 +60,10 @@ module CarrierWave
           file.close if file && !file.closed?
 
           @info = flickr.photos.getInfo('photo_id' => photo_id)
+        end
+
+        def delete
+          flickr.photos.delete 'photo_id' => @info['id']
         end
 
         private

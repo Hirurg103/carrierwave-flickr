@@ -3,6 +3,8 @@ require 'carrierwave/flickr'
 
 require 'active_record'
 require 'carrierwave/orm/activerecord'
+require 'carrierwave/flickr/activerecord'
+
 ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 
 Dir[File.expand_path('../support/**/*.rb', __FILE__)].each { |f| require f }
