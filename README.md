@@ -1,8 +1,9 @@
 # Carrierwave::Flickr
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/carrierwave/flickr`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Why do you need this library?
 
-TODO: Delete this and the text above, and describe your gem
+    * You want to store images in a fast and highly available storage
+    * You want photos to be publicly available in the Internet
 
 ## Installation
 
@@ -22,17 +23,41 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Put these lines in your carriervawe initializer
 
-## Development
+```ruby
+CarrierWave.configure do |config|
+  config.flickr_credentials = {
+    key: 'YOUR_API_KEY',
+    secret: 'YOUR_SECRET',
+    oauth_token: 'YOUR_TOKEN',
+    oauth_token_secret: 'YOUR_TOKEN_SECRET'
+  }
+end
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+If you want all photos to be stored in a specific album you can specify it
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```ruby
+CarrierWave.configure do |config|
+  config.flickr_credentials = {
+    ...
+    album: 'YOUR_ALBUM_ID'
+  }
+end
+```
+
+If you want to store photo sizes configure the column where to put them
+
+```ruby
+CarrierWave.configure do |config|
+  config.store_flickr_photo_sizes = :sizes
+end
+```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/carrierwave-flickr.
+Bug reports and pull requests are welcome on GitHub at https://github.com/hirurg103/carrierwave-flickr.
 
 
 ## License
