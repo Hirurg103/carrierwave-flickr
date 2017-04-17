@@ -2,8 +2,8 @@
 
 ## Why do you need this library?
 
-    * You want to store images in a fast and highly available storage
-    * You want photos to be publicly available in the Internet
+* You want to store images in a fast and highly available storage
+* You want photos to be publicly available in the Internet
 
 ## Installation
 
