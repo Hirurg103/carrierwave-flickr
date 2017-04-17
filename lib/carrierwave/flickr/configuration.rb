@@ -4,13 +4,25 @@ module CarrierWave
 
       extend ActiveSupport::Concern
 
-      module ClassMethods
-        def flickr=(credentials)
-          FlickRaw.api_key = credentials.fetch(:key)
-          FlickRaw.shared_secret = credentials.fetch(:secret)
+      included do
+        add_config :flickr_credentials
 
-          flickr.access_token = credentials.fetch(:oauth_token)
-          flickr.access_secret = credentials.fetch(:oauth_token_secret)
+        class << self
+          alias_method :flickr_without_configuration=, :flickr_credentials=
+          alias_method :flickr_credentials=, :flickr_with_configuration=
+        end
+      end
+
+      module ClassMethods
+
+        def flickr_with_configuration=(credentials)
+          self.flickr_without_configuration = credentials
+
+          FlickRaw.api_key = credentials[:key]
+          FlickRaw.shared_secret = credentials[:secret]
+
+          flickr.access_token = credentials[:oauth_token]
+          flickr.access_secret = credentials[:oauth_token_secret]
         end
       end
     end

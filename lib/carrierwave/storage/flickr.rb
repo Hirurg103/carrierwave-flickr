@@ -57,6 +57,8 @@ module CarrierWave
 
           photo_id = flickr.upload_photo file, **store_options
 
+          add_to_album(photo_id) if album.present?
+
           file.close if file && !file.closed?
 
           @info = flickr.photos.getInfo('photo_id' => photo_id)
@@ -64,6 +66,16 @@ module CarrierWave
 
         def delete
           flickr.photos.delete 'photo_id' => @info['id']
+        end
+
+        def add_to_album(photo_id)
+          flickr.photosets.addPhoto(
+            'photo_id' => photo_id,
+            'photoset_id' => album)
+        end
+
+        def album
+          @uploader.flickr_credentials[:album]
         end
 
         private

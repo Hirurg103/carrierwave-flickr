@@ -7,7 +7,7 @@ describe CarrierWave::Storage::Flickr do
       .and_return([])
 
     CarrierWave.configure do |config|
-      config.flickr = {
+      config.flickr_credentials = {
         key: 'API_KEY',
         secret: 'SECRET',
         oauth_token: 'TOKEN',
@@ -143,4 +143,20 @@ describe CarrierWave::Storage::Flickr do
     photo.destroy!
   end
 
+  it 'should put photo into an album if the album is configured' do
+    ImageUploader.configure do |config|
+      config.flickr_credentials = {
+        album: '72157624618609504',
+        key: 'API_KEY',
+        secret: 'SECRET',
+        oauth_token: 'TOKEN',
+        oauth_token_secret: 'SECRET'
+      }
+    end
+
+    expect(flickr).to receive_message_chain('photosets.addPhoto')
+      .with('photoset_id' => '72157624618609504', 'photo_id' => '33727870355')
+
+    create_photo file
+  end
 end
