@@ -1,19 +1,22 @@
 require 'spec_helper'
 
 describe CarrierWave::Storage::Flickr do
+  def configure!(flickr_credentials = {})
+    ImageUploader.configure do |config|
+      config.flickr_credentials = flickr_credentials.reverse_merge(
+        key: 'API_KEY',
+        secret: 'SECRET',
+        oauth_token: 'TOKEN',
+        oauth_token_secret: 'SECRET')
+    end
+  end
+
   before do
     allow_any_instance_of(FlickRaw::Flickr).to receive(:call)
       .with('flickr.reflection.getMethods')
       .and_return([])
 
-    CarrierWave.configure do |config|
-      config.flickr_credentials = {
-        key: 'API_KEY',
-        secret: 'SECRET',
-        oauth_token: 'TOKEN',
-        oauth_token_secret: 'SECRET'
-      }
-    end
+    configure!
   end
 
   def fixture_file(file)
@@ -47,6 +50,8 @@ describe CarrierWave::Storage::Flickr do
     mount_uploader :image, ImageUploader
 
     attr_accessor :description
+
+    serialize :sizes, Hash
   end
 
   def create_photo(file)
@@ -144,19 +149,47 @@ describe CarrierWave::Storage::Flickr do
   end
 
   it 'should put photo into an album if the album is configured' do
-    ImageUploader.configure do |config|
-      config.flickr_credentials = {
-        album: '72157624618609504',
-        key: 'API_KEY',
-        secret: 'SECRET',
-        oauth_token: 'TOKEN',
-        oauth_token_secret: 'SECRET'
-      }
-    end
+    configure! album: '72157624618609504'
 
     expect(flickr).to receive_message_chain('photosets.addPhoto')
       .with('photoset_id' => '72157624618609504', 'photo_id' => '33727870355')
 
     create_photo file
+
+    configure! album: nil
   end
+
+  def flickr_photo_sizes
+    sizes = JSON.parse(fixture_file("flickr/photo_sizes.json").read)
+    FlickRaw::Response.build({ 'size' => sizes }, 'sizes')
+  end
+
+  it 'should store image dimensions in the column specified in the configuration' do
+    ImageUploader.configure do |config|
+      config.store_flickr_photo_sizes = :sizes
+    end
+
+    allow(flickr).to receive_message_chain('photos.getSizes').and_return flickr_photo_sizes
+    photo = create_photo file
+
+    expect(photo.reload.sizes).to match hash_including({
+      small: {
+        height: 180,
+        width: 240
+      },
+      medium: {
+        height: 375,
+        width: 500
+      },
+      large: {
+        height: 768,
+        width: 1024
+      },
+      original: {
+        height: 1200,
+        width: 1600
+      }
+    })
+  end
+
 end

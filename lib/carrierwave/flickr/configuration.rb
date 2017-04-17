@@ -6,6 +6,7 @@ module CarrierWave
 
       included do
         add_config :flickr_credentials
+        add_config :store_flickr_photo_sizes
 
         class << self
           alias_method :flickr_without_configuration=, :flickr_credentials=

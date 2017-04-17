@@ -9,6 +9,7 @@ module CarrierWave
         f = CarrierWave::Storage::Flickr::File.new(uploader, self)
         @info = f.store(file)
         store_identifier
+        store_sizes if store_sizes?
         f
       end
 
@@ -36,6 +37,28 @@ module CarrierWave
         model.public_send(:"write_#{column}_identifier")
       end
 
+      def store_sizes
+        photo_sizes = flickr.photos.getSizes 'photo_id' => @info['id']
+
+        model = @uploader.model
+
+        model.update_column uploader.store_flickr_photo_sizes, prepare_sizes(photo_sizes)
+      end
+
+      def prepare_sizes(raw_sizes)
+        raw_sizes.each_with_object({}) do |raw_size, sizes|
+          key = raw_size['label'].downcase.gsub(/ /, '_').to_sym
+
+          sizes[key] = {
+            height: raw_size['height'].to_i,
+            width: raw_size['width'].to_i
+          }
+        end
+      end
+
+      def store_sizes?
+        uploader.store_flickr_photo_sizes.present?
+      end
 
       class File
         def initialize(uploader, base, info = nil)
