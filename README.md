@@ -58,6 +58,14 @@ CarrierWave.configure do |config|
 end
 ```
 
+To get an URL to the photo of a different format you can use
+
+```ruby
+  avatar.image.url(format: :square)
+```
+
+The list of available formats you can find [there](https://github.com/hanklords/flickraw#flickr-url-helpers)
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/hirurg103/carrierwave-flickr.
