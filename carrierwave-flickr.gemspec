@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["dzm.kov@gmail.com"]
 
   spec.summary       = %q{Save your image attachments in http://flickr.com/ using Carrierwave}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/Hirurg103/carrierwave-flickr"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
