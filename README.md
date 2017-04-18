@@ -36,8 +36,8 @@ CarrierWave.configure do |config|
 end
 ```
 
-This library uses [flickraw](https://github.com/hanklords/flickraw) under the hood.
-See its [Authentication section](https://github.com/hanklords/flickraw#authentication) to obtain secret and token
+**This library uses [flickraw](https://github.com/hanklords/flickraw) under the hood.
+See its [Authentication section](https://github.com/hanklords/flickraw#authentication) to obtain secret and token**
 
 If you want all photos to be stored in a specific album you can specify it
 
