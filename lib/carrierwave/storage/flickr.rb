@@ -82,6 +82,8 @@ module CarrierWave
 
           add_to_album(photo_id) if album.present?
 
+          apply_license(photo_id, license_id) if license_id.present?
+
           file.close if file && !file.closed?
 
           @info = flickr.photos.getInfo('photo_id' => photo_id)
@@ -90,6 +92,8 @@ module CarrierWave
         def delete
           flickr.photos.delete 'photo_id' => @info['id']
         end
+
+        private
 
         def add_to_album(photo_id)
           flickr.photosets.addPhoto(
@@ -101,7 +105,15 @@ module CarrierWave
           @uploader.flickr_credentials[:album]
         end
 
-        private
+        def apply_license(photo_id, license_id)
+          flickr.photos.licenses.setLicense(
+            'license_id' => license_id,
+            'photo_id' => photo_id)
+        end
+
+        def license_id
+          @uploader.flickr_credentials[:license_id]
+        end
 
         def store_options
           {}.tap do |options|

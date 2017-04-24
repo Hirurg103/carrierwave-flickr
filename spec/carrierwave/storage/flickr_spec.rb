@@ -190,6 +190,21 @@ describe CarrierWave::Storage::Flickr do
         width: 1600
       }
     })
+
+    ImageUploader.configure do |config|
+      config.store_flickr_photo_sizes = nil
+    end
+  end
+
+  it 'should apply a license if it is specified' do
+    configure! license_id: '9'
+
+    expect(flickr).to receive_message_chain('photos.licenses.setLicense')
+     .with('license_id' => '9', 'photo_id' => '33727870355')
+
+    create_photo file
+
+    configure! license_id: nil
   end
 
 end
